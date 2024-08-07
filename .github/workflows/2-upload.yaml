@@ -1,0 +1,28 @@
+name: ci-2-upload
+
+on:
+  push:
+    branches: [main]
+    paths:
+        - ".github/workflows/2-upload.yaml"
+
+jobs:
+  upload-test-file-2:
+    name: Upload file 2 / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-20.04]
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Save file
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-file-2nd-run-${{ matrix.os }}
+          path: test2.txt

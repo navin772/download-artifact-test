@@ -1,0 +1,53 @@
+name: merge-files
+
+on:
+  workflow_run:
+    workflows: [ci-1-upload, ci-2-upload, ci-3-upload]
+    types: [completed]
+    branches: [main]
+
+
+jobs:
+  merge-files:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    name: Download and merge files
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: list files
+        run: ls -l extracted/
+
+      - name: Download files from 1st workflow
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: 1-upload.yaml
+          name: test-file-1st-run*
+          path: extracted/
+          search_artifacts: true
+
+      - name: Download files from 2nd workflow
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: 2-upload.yaml
+          name: test-file-2nd-run*
+          path: extracted/
+          search_artifacts: true
+
+      - name: Download files from 3rd workflow
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: 3-upload.yaml
+          name: test-file-3rd-run*
+          path: extracted/
+          search_artifacts: true
+
+      - name: list files after download
+        run: ls -l extracted/

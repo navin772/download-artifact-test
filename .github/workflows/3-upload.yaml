@@ -1,0 +1,28 @@
+name: ci-3-upload
+
+on:
+  push:
+    branches: [main]
+    paths:
+        - ".github/workflows/3-upload.yaml"
+
+jobs:
+  upload-test-file-3:
+    name: Upload file 3 / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-20.04]
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Save file
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-file-3rd-run-${{ matrix.os }}
+          path: test3.txt
