@@ -3,8 +3,6 @@ name: ci-1-upload
 on:
   push:
     branches: [main]
-    paths:
-        - ".github/workflows/1-upload.yaml"
 
 jobs:
   upload-test-file-1:
