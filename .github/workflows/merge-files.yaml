@@ -29,23 +29,26 @@ jobs:
         uses: dawidd6/action-download-artifact@v6
         with:
           workflow: 1-upload.yaml
-          name: test-file-1st-run*
+          name: test-file-1st-run.*
           path: extracted/
+          name_is_regexp: true
           search_artifacts: true
 
       - name: Download files from 2nd workflow
         uses: dawidd6/action-download-artifact@v6
         with:
           workflow: 2-upload.yaml
-          name: test-file-2nd-run*
+          name: test-file-2nd-run.*
           path: extracted/
+          name_is_regexp: true
           search_artifacts: true
 
       - name: Download files from 3rd workflow
         uses: dawidd6/action-download-artifact@v6
         with:
           workflow: 3-upload.yaml
-          name: test-file-3rd-run*
+          name: test-file-3rd-run.*
+          name_is_regexp: true
           path: extracted/
           search_artifacts: true
 
