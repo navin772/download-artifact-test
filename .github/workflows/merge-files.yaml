@@ -1,24 +1,30 @@
 name: merge-files
 
 on:
-  workflow_dispatch:  # Manually trigger or use another event as needed
+  workflow_run:
+    workflows: [ci-1-upload, ci-2-upload, ci-3-upload]
+    types:
+      - completed
+    branches:
+      - main
 
 jobs:
   merge-files:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     name: Download and merge files
     runs-on: ubuntu-latest
     steps:
       - name: Wait for ci-1-upload, ci-2-upload, and ci-3-upload to complete
         uses: lewagon/wait-on-check-action@v1.3.4
         with:
-          ref: main  # The branch to check
+          ref: main
           check-name: |
             ci-1-upload
             ci-2-upload
             ci-3-upload
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 10  # Interval between checks in seconds
-          allowed-conclusions: success  # Only proceed if all checks succeed
+          wait-interval: 10
+          allowed-conclusions: success
 
       - uses: actions/checkout@v3
         with:
