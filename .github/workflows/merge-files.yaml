@@ -72,16 +72,11 @@ on:
     types: [completed]
     branches: [main]
 
-
 jobs:
   merge-files:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     name: Download and merge files
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v3
@@ -92,24 +87,28 @@ jobs:
         id: check-workflows
         run: |
           required_workflows=("ci-1-upload" "ci-2-upload" "ci-3-upload")
+          all_succeeded=true
           for workflow in "${required_workflows[@]}"; do
             conclusion=$(gh run list --workflow=$workflow --branch=main --json conclusion -q '.[0].conclusion')
             if [[ "$conclusion" != "success" ]]; then
+              all_succeeded=false
               echo "Workflow $workflow did not complete successfully. Exiting."
-              exit 1
+              break
             fi
           done
+          echo "all_succeeded=$all_succeeded" >> $GITHUB_ENV
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Continue only if all workflows succeeded
-        if: steps.check-workflows.conclusion == 'success'
+        if: ${{ env.all_succeeded == 'true' }}
         run: echo "All workflows completed successfully. Proceeding with file merge."
 
       - name: list files
         run: ls -l extracted/
 
       - name: Download files from 1st workflow
+        if: ${{ env.all_succeeded == 'true' }}
         uses: dawidd6/action-download-artifact@v6
         with:
           workflow: ci-1-upload.yml
@@ -119,6 +118,7 @@ jobs:
           search_artifacts: true
 
       - name: Download files from 2nd workflow
+        if: ${{ env.all_succeeded == 'true' }}
         uses: dawidd6/action-download-artifact@v6
         with:
           workflow: ci-2-upload.yml
@@ -128,6 +128,7 @@ jobs:
           search_artifacts: true
 
       - name: Download files from 3rd workflow
+        if: ${{ env.all_succeeded == 'true' }}
         uses: dawidd6/action-download-artifact@v6
         with:
           workflow: ci-3-upload.yml
@@ -137,4 +138,5 @@ jobs:
           search_artifacts: true
 
       - name: list files after download
+        if: ${{ env.all_succeeded == 'true' }}
         run: ls -l extracted/
