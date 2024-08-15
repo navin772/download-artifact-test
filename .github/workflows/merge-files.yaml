@@ -88,7 +88,7 @@ jobs:
         run: |
           workflows=("ci-1-upload" "ci-2-upload" "ci-3-upload")
           max_retries=600  # Set a max retry limit (e.g., 60 retries with 1-minute intervals)
-          interval=2      # Set interval in seconds between retries (1 minute)
+          interval=1      # Set interval in seconds between retries (1 minute)
           all_completed=false
 
           for (( i=0; i<$max_retries; i++ )); do

@@ -19,7 +19,7 @@ jobs:
           submodules: true
 
       - name: sleep
-        run: sleep 5
+        run: sleep 10
 
       - name: Save file
         if: ${{ always() }}
