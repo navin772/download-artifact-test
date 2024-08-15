@@ -17,7 +17,7 @@ jobs:
       - name: Wait for ci-1-upload, ci-2-upload, and ci-3-upload to complete
         uses: lewagon/wait-on-check-action@v1.3.4
         with:
-          ref: main
+          ref: ${{ github.sha }}
           check-name: |
             ci-1-upload
             ci-2-upload
