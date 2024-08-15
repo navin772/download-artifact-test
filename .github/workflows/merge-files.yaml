@@ -19,9 +19,9 @@ jobs:
         with:
           ref: ${{ github.sha }}
           check-name: |
-            'Upload file 1 /.*'
-            'Upload file 2 /.*'
-            'Upload file 3 /.*'
+            Upload file 1 /.*
+            Upload file 2 /.*
+            Upload file 3 /.*
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           wait-interval: 10
           allowed-conclusions: success
