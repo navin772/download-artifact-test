@@ -86,17 +86,35 @@ jobs:
       - name: Check if all required workflows completed successfully
         id: check-workflows
         run: |
-          required_workflows=("ci-1-upload" "ci-2-upload" "ci-3-upload")
-          all_succeeded=true
-          for workflow in "${required_workflows[@]}"; do
-            conclusion=$(gh run list --workflow=$workflow --branch=main --json conclusion -q '.[0].conclusion')
-            if [[ "$conclusion" != "success" ]]; then
-              all_succeeded=false
-              echo "Workflow $workflow did not complete successfully. Exiting."
+          workflows=("ci-1-upload" "ci-2-upload" "ci-3-upload")
+          max_retries=600  # Set a max retry limit (e.g., 60 retries with 1-minute intervals)
+          interval=2      # Set interval in seconds between retries (1 minute)
+          all_completed=false
+
+          for (( i=0; i<$max_retries; i++ )); do
+            all_completed=true
+            for workflow in "${workflows[@]}"; do
+              conclusion=$(gh run list --workflow=$workflow --branch=main --json conclusion -q '.[0].conclusion')
+              if [[ "$conclusion" != "success" ]]; then
+                echo "Workflow $workflow is not completed yet. Waiting..."
+                all_completed=false
+                break
+              fi
+            done
+
+            if [[ "$all_completed" == "true" ]]; then
+              echo "All workflows completed successfully."
+              echo "all_succeeded=true" >> $GITHUB_ENV
               break
+            else
+              sleep $interval
             fi
           done
-          echo "all_succeeded=$all_succeeded" >> $GITHUB_ENV
+
+          if [[ "$all_completed" != "true" ]]; then
+            echo "Timeout waiting for workflows to complete. Exiting."
+            exit 1
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

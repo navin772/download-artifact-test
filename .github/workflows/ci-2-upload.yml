@@ -18,6 +18,9 @@ jobs:
         with:
           submodules: true
 
+      - name: sleep
+        run: sleep 5
+
       - name: Save file
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
