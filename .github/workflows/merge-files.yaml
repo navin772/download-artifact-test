@@ -84,6 +84,10 @@ jobs:
         os: [ubuntu-latest]
     timeout-minutes: 60
     steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+
       - name: Check if all required workflows completed successfully
         id: check-workflows
         run: |
@@ -101,10 +105,6 @@ jobs:
       - name: Continue only if all workflows succeeded
         if: steps.check-workflows.conclusion == 'success'
         run: echo "All workflows completed successfully. Proceeding with file merge."
-
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
 
       - name: list files
         run: ls -l extracted/
