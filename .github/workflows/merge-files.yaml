@@ -67,9 +67,9 @@
 name: merge-files
 
 on:
-  workflow_run:
-    workflows: [ci-1-upload, ci-2-upload, ci-3-upload]
-    types: [completed]
+  push:
+    # workflows: [ci-1-upload, ci-2-upload, ci-3-upload]
+    # types: [completed]
     branches: [main]
 
 jobs:
