@@ -68,8 +68,6 @@ name: merge-files
 
 on:
   push:
-    # workflows: [ci-1-upload, ci-2-upload, ci-3-upload]
-    # types: [completed]
     branches: [main]
 
 jobs:
@@ -91,19 +89,21 @@ jobs:
           interval=1      # Set interval in seconds between retries (1 minute)
           all_completed=false
 
+          commit_sha=$(git rev-parse HEAD)  # Get the current commit SHA
+
           for (( i=0; i<$max_retries; i++ )); do
             all_completed=true
             for workflow in "${workflows[@]}"; do
-              conclusion=$(gh run list --workflow=$workflow --branch=main --json conclusion -q '.[0].conclusion')
+              conclusion=$(gh run list --workflow=$workflow --branch=main --json conclusion,head_sha -q ".[?(@.head_sha=='$commit_sha')].conclusion | [0]")
               if [[ "$conclusion" != "success" ]]; then
-                echo "Workflow $workflow is not completed yet. Waiting..."
+                echo "Workflow $workflow is not completed yet for commit $commit_sha. Waiting..."
                 all_completed=false
                 break
               fi
             done
 
             if [[ "$all_completed" == "true" ]]; then
-              echo "All workflows completed successfully."
+              echo "All workflows completed successfully for commit $commit_sha."
               echo "all_succeeded=true" >> $GITHUB_ENV
               break
             else
@@ -112,7 +112,7 @@ jobs:
           done
 
           if [[ "$all_completed" != "true" ]]; then
-            echo "Timeout waiting for workflows to complete. Exiting."
+            echo "Timeout waiting for workflows to complete for commit $commit_sha. Exiting."
             exit 1
           fi
         env:
