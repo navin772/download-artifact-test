@@ -88,17 +88,19 @@ jobs:
           max_retries=600  # Set a max retry limit (e.g., 600 retries with 1-second intervals)
           interval=1      # Set interval in seconds between retries
           all_completed=false
+          any_succeeded=false
 
           commit_sha=$(git rev-parse HEAD)  # Get the current commit SHA
 
           for (( i=0; i<$max_retries; i++ )); do
             all_completed=true
+            any_succeeded=false
             for workflow in "${workflows[@]}"; do
               conclusion=$(gh run list --workflow=$workflow --branch=main --json conclusion,headSha | jq -r --arg sha "$commit_sha" '.[] | select(.headSha == $sha) | .conclusion')
-              if [[ "$conclusion" != "success" ]]; then
-                echo "Workflow $workflow is not completed yet for commit $commit_sha. Waiting..."
+              if [[ "$conclusion" == "success" ]]; then
+                any_succeeded=true
+              else
                 all_completed=false
-                break
               fi
             done
 
@@ -106,17 +108,24 @@ jobs:
               echo "All workflows completed successfully for commit $commit_sha."
               echo "all_succeeded=true" >> $GITHUB_ENV
               break
+            fi
+
+            if [[ "$i" -eq $((max_retries - 1)) ]]; then
+              # If we've reached the max retries, check if at least one workflow has succeeded
+              if [[ "$any_succeeded" == "true" ]]; then
+                echo "At least one workflow succeeded for commit $commit_sha."
+                echo "some_succeeded=true" >> $GITHUB_ENV
+              else
+                echo "Timeout waiting for workflows to complete for commit $commit_sha. Exiting."
+                exit 1
+              fi
             else
               sleep $interval
             fi
           done
-
-          if [[ "$all_completed" != "true" ]]; then
-            echo "Timeout waiting for workflows to complete for commit $commit_sha. Exiting."
-            exit 1
-          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
       - name: Continue only if all workflows succeeded
         if: ${{ env.all_succeeded == 'true' }}
