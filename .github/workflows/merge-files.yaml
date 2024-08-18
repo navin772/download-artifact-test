@@ -94,7 +94,7 @@ jobs:
           for (( i=0; i<$max_retries; i++ )); do
             all_completed=true
             for workflow in "${workflows[@]}"; do
-              conclusion=$(gh run list --workflow=$workflow --branch=main --json conclusion,head_sha -q ".[?(@.head_sha=='$commit_sha')].conclusion | [0]")
+              conclusion=$(gh run list --workflow=$workflow --branch=main --json conclusion,headSha -q ".[?(@.headSha=='$commit_sha')].conclusion | [0]")
               if [[ "$conclusion" != "success" ]]; then
                 echo "Workflow $workflow is not completed yet for commit $commit_sha. Waiting..."
                 all_completed=false
