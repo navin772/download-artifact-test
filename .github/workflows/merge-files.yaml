@@ -5,8 +5,7 @@ on:
     workflows: [ci-1-upload]
     types:
       - completed
-    branches:
-      - "*"
+    # branches: [main, test-merge]
 
 jobs:
   merge-files:
