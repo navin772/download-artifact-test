@@ -2,6 +2,8 @@ name: ci-3-upload
 
 on:
   push:
+    branches: [main, test-merge]
+  pull_request:
     branches: [main]
 
 jobs:
